@@ -1,0 +1,140 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+/* Implements a linked list of integers
+
+ A list is comprised of a single header and zero or more elements. The
+ header contains pointers to the first and last elements in the list,
+ or NULL if the list is empty. The first element contains a pointer to
+ the next element, and so on. The last element in the list has its
+ "next" pointer set to NULL.
+
+ ** Global Precondition **
+
+ Functions that operate on an existing list require a valid pointer to
+ a list_t header as their first argument.
+*/
+
+// List element: a list is a chain of these
+typedef struct element
+{
+  int val;
+  struct element* next;
+} element_t;
+
+// List header - keep track of the first and last list elements
+typedef struct list
+{
+  element_t* head;
+  element_t* tail;
+} list_t;
+
+// returns a pointer to a new header for an empty list
+list_t* list_create( void )
+{
+  list_t* l = malloc( sizeof(list_t) );
+  if( l )
+    {
+      l->head = NULL;
+      l->tail = NULL;
+    }
+  return l;
+}
+
+// frees all the memory used by the list
+void list_destroy( list_t* list )
+{
+  element_t* el = list->head;
+  while( el )
+    {
+      element_t* next = el->next;
+      free( el );
+      el = next;
+    }      
+  
+  free( list );
+}
+
+// returns a pointer to a new list element containing integer i
+element_t* element_create( int i )
+{
+  element_t* el = malloc( sizeof(element_t) );
+  if( el )
+    {
+      el->val = i;
+      el->next = NULL;
+    }
+  return el;
+}
+
+// Appends a new element containing integer i to the end of the
+// list. Returns 0 on success, else 1.
+int list_append( list_t* list, int i )
+{
+  element_t* el = element_create( i );
+  
+  if( list->head == NULL )
+    list->head = el;
+  
+  if( list->tail )
+    list->tail->next = el;
+
+  list->tail = el;
+  return 0;
+}
+
+// Prepends a new element containing integer i to the head of the
+// list. Returns 0 on success, else 1.
+int list_prepend( list_t* list, int i )
+{
+  element_t* el = element_create( i );
+
+  if( list->tail == NULL )
+    list->tail = el;
+  
+  if( list->head )
+    el->next = list->head;
+
+  list->head = el;
+  
+  return 0;
+}
+
+// Returns a pointer to the ith list element, where the list head is
+// 0, head->next is 1, etc., or NULL if i is out of range (i.e. larger
+// than (list length -1 ))
+element_t* list_index( list_t* list, unsigned int i )
+{
+  if( list->head == NULL )
+    return NULL;
+
+  element_t* el = list->head;
+  unsigned int now = 0;
+  
+  while( now < i )
+    {
+      if( el->next == NULL )
+	return NULL;
+
+      now++;
+      el = el->next;
+    }     
+  
+  return el;
+}
+
+
+// Prints a list in human-readable form from the first to last
+// elements
+void list_print( list_t* list )
+{
+  printf( "{" );
+  
+  for( element_t* el = list->head;
+       el;
+       el = el->next )
+    printf( " %d", el->val );
+
+  printf( " }\n" );
+}
+
